@@ -86,6 +86,8 @@
         "SUSHI":"0x6b3595068778dd592e39a122f4f5a5cf09c90fe2",
         "AAVE":"0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
         "YFI":"0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e",
+        "cMATIC": "0x944DD1c7ce133B75880CeE913d513f8C07312393",
+        "MATIC": "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
         "GovernorBravoDelegator": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
         "GovernorBravoDelegate": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378"
     },
@@ -398,6 +400,12 @@
           "name":"yearn.finance",
           "symbol":"YFI",
           "address":"0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e"
+        },
+        "MATIC":{
+            "name": "Matic Token",
+            "symbol":"MATIC",
+            "decimals": 18,
+            "address":"0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0"
         }
     },
     "CTokenDelegate": {
@@ -579,6 +587,15 @@
           "initialexchangeratemantissa": "200000000000000000000000000",
           "address":"0x80a2AE356fc9ef4305676f7a3E2Ed04e12C33946"
 
+        },
+        "cMATIC": {
+            "name": "Compound Matic Token",
+            "symbol": "cMATIC",
+            "decimals": 8,
+            "underlying": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
+            "contract": "CErc20Delegator",
+            "initial_exchange_rate_mantissa": "20000000000000000",
+            "address": "0x944DD1c7ce133B75880CeE913d513f8C07312393"
         }
     },
     "InterestRateModel": {

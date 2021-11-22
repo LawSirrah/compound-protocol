@@ -1,0 +1,71 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+
+-- Token holder addresses for mocking
+Alias CompHolder "0x7587caefc8096f5f40acb83a09df031a018c66ec"
+Alias MaticHolder "0x2f7e209e0F5F645c7612D7610193Fe268F118b28"
+Alias CUSDCHolder "0xB3BD459e0598ddE1FE84B1d0a1430BE175B5D5be"
+
+--use a block AFTER the oracle contrat has been deployed.
+Web3Fork "https://mainnet-eth.compound.finance/@13545034" (CompHolder MaticHolder CUSDCHolder)
+UseConfigs mainnet
+
+-- update to the new oracle implementation
+Alias NewOracle "0x046728da7cb8272284238bD3e47909823d63A58D"
+-- Delegate and propose update
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Update Oracle" [(Address Comptroller)] [0] ["_setPriceOracle(address)"] [[(address NewOracle)]])
+Print "New Oracle Set"
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+
+
+-- Delegate and propose update
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Add MATIC Market" [(Address Comptroller) (Address Comptroller) (Address cMATIC)] [0 0 0] ["_supportMarket(address)" "_setCollateralFactor(address,uint256)" "_setReserveFactor(uint256)"] [[(address cMATIC)] [(address cMATIC) 0] [250000000000000000]])
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+
+-- Assert cMATIC market supported
+Assert True (Comptroller CheckListed cMATIC)
+
+-- Ensure accrue interest works
+CToken cMATIC AccrueInterest
+
+-- Mint test
+From MaticHolder (Erc20 MATIC Approve (Address cMATIC) 10e18)
+From MaticHolder (CToken cMATIC Mint 10e18)
+Assert Equal (Erc20 MATIC TokenBalance cMATIC) (10e18)
+
+
+-- Borrow test
+--fail here. Not enough collateral? Too much borrowed value?
+From CUSDCHolder (CToken cMATIC Borrow 1e18) 
+Assert Equal (Erc20 MATIC TokenBalance CUSDCHolder) (1e18)
+Assert Equal (Erc20 MATIC TokenBalance cMATIC) (9e18)
+
+-- Repay borrow test
+From CUSDCHolder (Erc20 MATIC Approve (Address cMATIC) 1e18)
+From CUSDCHolder (CToken cMATIC RepayBorrow 1e18)
+Assert Equal (Erc20 MATIC TokenBalance CUSDCHolder) (0)
+Assert Equal (Erc20 MATIC TokenBalance cMATIC) (10e18)
+
+-- Redeem test (note: 50 cMATIC == 1 MATIC initially)
+From MaticHolder (CToken cMATIC Redeem 50e8)
+
+Print "cMATIC integration ok"
