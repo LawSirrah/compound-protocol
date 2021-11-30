@@ -54,7 +54,6 @@ Assert Equal (Erc20 MATIC TokenBalance cMATIC) (10e18)
 
 
 -- Borrow test
---fail here. Not enough collateral? Too much borrowed value?
 From CUSDCHolder (CToken cMATIC Borrow 1e18) 
 Assert Equal (Erc20 MATIC TokenBalance CUSDCHolder) (1e18)
 Assert Equal (Erc20 MATIC TokenBalance cMATIC) (9e18)
